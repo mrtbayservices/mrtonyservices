@@ -90,13 +90,23 @@
     var btn = form.querySelector('button[type="submit"]');
     btn.disabled = true; btn.textContent = 'Sending…';
 
-    // Netlify Forms (works when hosted on Netlify); falls back to email app elsewhere
-    fetch('/', {
+fetch('https://api.web3forms.com/submit', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(fd).toString()
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        access_key: '3be1002a-bd15-4b1f-bb09-e73e8e26845d',
+        subject: 'New estimate request: ' + data.service + ' — ' + data.name,
+        from_name: 'Mr. Tony Services website',
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+        service: data.service,
+        message: data.message
+      })
     }).then(function (res) {
-      if (!res.ok) throw new Error('Form endpoint unavailable');
+      return res.json();
+    }).then(function (json) {
+      if (!json.success) throw new Error(json.message || 'Send failed');
       form.reset();
       show('Thank you! Your request was sent. We will contact you shortly.', true);
     }).catch(function () {
