@@ -4,9 +4,32 @@
 
   var EMAIL = 'mrtbayservices@gmail.com';
 
+  function loadPartial(id, url) {
+    var el = document.getElementById(id);
+    if (!el) return Promise.resolve();
+    return fetch(url)
+      .then(function (r) { return r.text(); })
+      .then(function (h) { el.outerHTML = h; })
+      .catch(function () {});
+  }
+
+  Promise.all([
+    loadPartial('site-header', '/partials/header.html'),
+    loadPartial('site-footer', '/partials/footer.html')
+  ]).then(init);
+
+  function init() {
+
   // Footer year
   var y = document.getElementById('year');
   if (y) y.textContent = new Date().getFullYear();
+
+    document.querySelectorAll('#menu a').forEach(function (a) {
+    var p = a.getAttribute('href');
+    if (p.charAt(0) === '/' && p.length > 1 && p.indexOf('#') === -1 && location.pathname.indexOf(p) === 0) {
+      a.setAttribute('aria-current', 'page');
+    }
+  });
 
   // Sticky header shadow
   var nav = document.getElementById('nav');
@@ -116,4 +139,5 @@ fetch('https://api.web3forms.com/submit', {
       btn.disabled = false; btn.textContent = 'Send request';
     });
   });
+  }
 })();

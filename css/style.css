@@ -32,12 +32,13 @@ section{padding:80px 0}
 .btn svg{width:18px;height:18px}
 
 /* Top bar + nav */
+#site-header{min-height:107px}
 .topbar{background:var(--ink);color:#d9d4c7;font-size:.88rem;padding:8px 0}
 .topbar .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .topbar a{color:#ffd37a;text-decoration:none;font-weight:600}
 header.nav{position:sticky;top:0;z-index:50;background:rgba(251,250,246,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);transition:box-shadow .2s}
 header.nav.scrolled{box-shadow:0 6px 20px rgba(35,38,43,.08)}
-.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:70px;gap:16px}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:70px;gap:16px;max-width:100%}
 .brand img{height:42px;width:auto}
 .menu{display:flex;align-items:center;gap:26px}
 .menu a{text-decoration:none;font-weight:600;font-size:.95rem;color:var(--ink-2)}
@@ -127,6 +128,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;
 .msg.err{display:block;background:#fdeaea;color:#a52222}
 
 /* Footer */
+#site-footer{min-height:120px}
 footer{background:#17191d;color:#aab0ba;padding:36px 0;font-size:.93rem}
 footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:18px;align-items:center}
 footer img{height:38px;filter:brightness(0) invert(1);opacity:.9}
@@ -164,4 +166,17 @@ footer a{color:#ffd37a;text-decoration:none}
 }
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}.btn,.card{transition:none}
+}
+
+/* Desktop nav: logo left, links centered, buttons right */
+@media(min-width:901px){
+  .nav .wrap{display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center;max-width:100%}
+  .menu{display:contents}
+  .menu .links{display:flex;justify-content:center;gap:26px}
+  .menu .actions{display:flex;align-items:center;gap:10px}
+}
+/* Mobile dropdown */
+@media(max-width:900px){
+  .menu .links,.menu .actions{display:flex;flex-direction:column}
+  .menu .actions{gap:10px;margin-top:14px}
 }
