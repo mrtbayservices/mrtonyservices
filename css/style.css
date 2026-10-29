@@ -54,9 +54,8 @@ header.nav.scrolled{box-shadow:0 6px 20px rgba(35,38,43,.08)}
 .cta{display:grid;grid-template-columns:1fr;gap:12px;max-width:400px;margin:28px 0 26px}
 .cta .btn{width:100%}
 .btns{display:contents}
-.btn.book{background:#fff;color:#23262b;box-shadow:none}
-.btn.book:hover{background:#f3eee3}.badges{display:flex;gap:22px;flex-wrap:wrap;font-size:.95rem;color:#e6e8ec}
-.badges div{display:flex;align-items:center;gap:8px}
+.btn.light{background:#fff;color:#23262b;box-shadow:none}
+.btn.light:hover{background:#f3eee3}.badges div{display:flex;align-items:center;gap:8px}
 .stars{color:var(--accent);letter-spacing:2px}
 .hero-card{background:#fff;border-radius:22px;padding:26px;box-shadow:0 30px 60px rgba(0,0,0,.35);transform:rotate(1.5deg)}
 .hero-card img{width:100%;height:auto}
@@ -136,6 +135,7 @@ footer a{color:#ffd37a;text-decoration:none}
 /* Floating call button (mobile) */
 .fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--accent);color:#1d1a12;width:58px;height:58px;border-radius:50%;display:none;place-items:center;box-shadow:0 10px 24px rgba(0,0,0,.3)}
 .fab svg{width:26px;height:26px}
+.fab.book-online{bottom: calc(80px + env(safe-area-inset-bottom, 0px))}
 
 /* Reveal on scroll */
 .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease}
@@ -145,6 +145,9 @@ footer a{color:#ffd37a;text-decoration:none}
 @media(max-width:900px){
   section{padding:58px 0}
   .hero .wrap,.split{grid-template-columns:1fr}
+  .menu .free-estimate{display:none}
+  .cta .ghost{display:none}
+  a.book-online.btn {display: none;}
   .hero-card{transform:none;max-width:420px;margin:0 auto}
   .grid,.steps{grid-template-columns:1fr 1fr}
   .strip .wrap{grid-template-columns:1fr 1fr}
