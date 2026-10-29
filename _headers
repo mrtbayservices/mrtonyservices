@@ -5,3 +5,6 @@
 
 /images/*
   Cache-Control: public, max-age=604800
+  /
+  Link: </markdown/index.md>; rel="alternate"; type="text/markdown"
+  Link: </llms.txt>; rel="describedby"; type="text/plain"
