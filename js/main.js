@@ -101,12 +101,13 @@
     });
   });
 
-  // 3. Online Booking / HouseCall Pro düymələri (Saytdakı Book Online düymələri)
-  document.querySelectorAll('a[href*="book"], .track-booking, button:contains("Book Online")').forEach(function(item) {
+  // 3. Online Booking / HouseCall Pro düymələri (Düzəldilmiş versiya)
+  document.querySelectorAll('a[href*="housecallpro"], .book-online').forEach(function(item) {
     item.addEventListener('click', function() {
       sendTelegramAlert("📅 İstifadəçi 'Book Online' (HouseCall Pro) düyməsinə kliklədi!");
     });
   });
+
 
 
   // Estimate form
