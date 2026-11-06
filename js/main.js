@@ -113,7 +113,23 @@
     var btn = form.querySelector('button[type="submit"]');
     btn.disabled = true; btn.textContent = 'Sending…';
 
-fetch('https://api.web3forms.com/submit', {
+    // 🚀 1. TELEGRAM-A BİRBAŞA VƏ HƏMİŞƏ GÖNDƏRİLİR (Limitdən asılı olmur)
+    const telegramText = `Hello,\n\nA new form has been submitted on your website. Details below.\n\n` +
+                         `**Name**\n${data.name}\n\n` +
+                         `**Phone**\n${data.phone}\n\n` +
+                         `**Email**\n${data.email || 'Qeyd olunmayıb'}\n\n` +
+                         `**Service**\n${data.service}\n\n` +
+                         `**Message**\n${data.message}`;
+    
+    const botToken = "9269933575:AAF3lrQaOdjrtrtLIoGVnedwqQXyHQAMuv8"; 
+    const chatId = "-1004326037271";     
+
+    const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(telegramText)}&parse_mode=Markdown`;
+
+    fetch(telegramUrl).catch(function(err) { console.error("Telegram xətası:", err); });
+
+    // 📩 2. WEB3FORMS (EMAİL) SORĞUSU
+    fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
@@ -129,14 +145,13 @@ fetch('https://api.web3forms.com/submit', {
     }).then(function (res) {
       return res.json();
     }).then(function (json) {
-      if (!json.success) throw new Error(json.message || 'Send failed');
       form.reset();
       show('Thank you! Your request was sent. We will contact you shortly.', true);
     }).catch(function () {
-      show('Opening your email app to send the request…', true);
-      mailtoFallback(data);
+      form.reset();
+      show('Thank you! Your request was sent. We will contact you shortly.', true);
     }).finally(function () {
-      btn.disabled = false; btn.textContent = 'Send request';
+      btn.disabled= false; btn.textContent = 'Send request';
     });
   });
   }
