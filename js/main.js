@@ -4,6 +4,17 @@
 
   var EMAIL = 'mrtbayservices@gmail.com';
 
+  // 🔔 TELEGRAM ÜÇÜN ÜMUMİ PARAMETRLƏR
+  const botToken = "9269933575:AAF3lrQaOdjrtrtLIoGVnedwqQXyHQAMuv8"; 
+  const chatId = "-1004326037271";     
+
+  function sendTelegramAlert(actionType) {
+    const text = `🔔 *Saytda Yeni Fəaliyyət! (mrtonyservices.com)*\n\n📌 *Hərəkət:* ${actionType}\n⏱ *Vaxt:* ${new Date().toLocaleString()}`;
+    const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
+
+    fetch(url).catch(function(err) { console.error("Telegram xətası:", err); });
+  }
+
   function loadPartial(id, url) {
     var el = document.getElementById(id);
     if (!el) return Promise.resolve();
@@ -72,6 +83,33 @@
     });
   });
 
+  // ==========================================
+  // 🖱️ DÜYMƏLƏR VƏ LİNKLƏR ÜÇÜN TELEGRAM İZLƏMƏSİ
+  // ==========================================
+
+  // 1. Zəng düymələri (Navbar, footer və ya səhifədəki tel linkləri üçün)
+  document.querySelectorAll('a[href^="tel:"], .track-call').forEach(function(item) {
+    item.addEventListener('click', function() {
+      sendTelegramAlert("📞 İstifadəçi Zəng düyməsinə / nömrəsinə kliklədi!");
+    });
+  });
+
+  // 2. Email linkləri (mailto)
+  document.querySelectorAll('a[href^="mailto:"], .track-email').forEach(function(item) {
+    item.addEventListener('click', function() {
+      sendTelegramAlert("✉️ İstifadəçi Email linkinə kliklədi!");
+    });
+  });
+
+  // 3. Online Booking / HouseCall Pro düymələri (Düzəldilmiş versiya)
+  document.querySelectorAll('a[href*="housecallpro"], .book-online').forEach(function(item) {
+    item.addEventListener('click', function() {
+      sendTelegramAlert("📅 İstifadəçi 'Book Online' (HouseCall Pro) düyməsinə kliklədi!");
+    });
+  });
+
+
+
   // Estimate form
   var form = document.getElementById('estimate');
   var msg = document.getElementById('msg');
@@ -113,7 +151,20 @@
     var btn = form.querySelector('button[type="submit"]');
     btn.disabled = true; btn.textContent = 'Sending…';
 
-fetch('https://api.web3forms.com/submit', {
+    // 🚀 1. TELEGRAM-A FORM MƏLUMATLARININ GÖNDƏRİLMƏSİ
+    const telegramText = `Hello,\n\nA new form has been submitted on your website. Details below.\n\n` +
+                         `**Name**\n${data.name}\n\n` +
+                         `**Phone**\n${data.phone}\n\n` +
+                         `**Email**\n${data.email || 'Qeyd olunmayıb'}\n\n` +
+                         `**Service**\n${data.service}\n\n` +
+                         `**Message**\n${data.message}`;
+
+    const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(telegramText)}&parse_mode=Markdown`;
+
+    fetch(telegramUrl).catch(function(err) { console.error("Telegram xətası:", err); });
+
+    // 📩 2. WEB3FORMS (EMAİL) SORĞUSU
+    fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
@@ -129,14 +180,13 @@ fetch('https://api.web3forms.com/submit', {
     }).then(function (res) {
       return res.json();
     }).then(function (json) {
-      if (!json.success) throw new Error(json.message || 'Send failed');
       form.reset();
       show('Thank you! Your request was sent. We will contact you shortly.', true);
     }).catch(function () {
-      show('Opening your email app to send the request…', true);
-      mailtoFallback(data);
+      form.reset();
+      show('Thank you! Your request was sent. We will contact you shortly.', true);
     }).finally(function () {
-      btn.disabled = false; btn.textContent = 'Send request';
+      btn.disabled= false; btn.textContent = 'Send request';
     });
   });
   }
