@@ -4,9 +4,6 @@
 
   var EMAIL = 'mrtbayservices@gmail.com';
 
-  // 🔔 TELEGRAM ÜÇÜN ÜMUMİ PARAMETRLƏR
-  const botToken = "9269933575:AAF3lrQaOdjrtrtLIoGVnedwqQXyHQAMuv8"; 
-  const chatId = "-1004326037271";     
 
   function sendTelegramAlert(actionType) {
     const text = `🔔 *Saytda Yeni Fəaliyyət! (mrtonyservices.com)*\n\n📌 *Hərəkət:* ${actionType}\n⏱ *Vaxt:* ${new Date().toLocaleString()}`;
@@ -151,17 +148,12 @@
     var btn = form.querySelector('button[type="submit"]');
     btn.disabled = true; btn.textContent = 'Sending…';
 
-    // 🚀 1. TELEGRAM-A FORM MƏLUMATLARININ GÖNDƏRİLMƏSİ
-    const telegramText = `Hello,\n\nA new form has been submitted on your website. Details below.\n\n` +
-                         `**Name**\n${data.name}\n\n` +
-                         `**Phone**\n${data.phone}\n\n` +
-                         `**Email**\n${data.email || 'Qeyd olunmayıb'}\n\n` +
-                         `**Service**\n${data.service}\n\n` +
-                         `**Message**\n${data.message}`;
-
-    const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(telegramText)}&parse_mode=Markdown`;
-
-    fetch(telegramUrl).catch(function(err) { console.error("Telegram xətası:", err); });
+        // Save request + notify Telegram (token stays on the server)
+    fetch('https://fdzxqwtenqfommrtdlvg.supabase.co/functions/v1/new-request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).catch(function (err) { console.error('Request save failed:', err); });
 
     // 📩 2. WEB3FORMS (EMAİL) SORĞUSU
     fetch('https://api.web3forms.com/submit', {
