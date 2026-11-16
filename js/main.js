@@ -183,3 +183,32 @@
   });
   }
 })();
+
+/* Click tracking → Telegram (token stays on the server) */
+(function () {
+  var URL = 'https://fdzxqwtenqfommrtdlvg.supabase.co/functions/v1/notify-click';
+  function kind(h) {
+    h = (h || '').toLowerCase();
+    if (h.indexOf('tel:') === 0) return 'call';
+    if (h.indexOf('mailto:') === 0) return 'email';
+    if (h.indexOf('wa.me') !== -1) return 'whatsapp';
+    if (h.indexOf('housecallpro.com') !== -1) return 'booking';
+    if (h.indexOf('instagram.com') !== -1) return 'instagram';
+    if (h.indexOf('yelp.') !== -1) return 'yelp';
+    return null;
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a) return;
+    var type = kind(a.getAttribute('href'));
+    if (!type) return;
+    try {
+      fetch(URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: type, page: location.pathname }),
+        keepalive: true
+      }).catch(function () {});
+    } catch (_) {}
+  });
+})();
