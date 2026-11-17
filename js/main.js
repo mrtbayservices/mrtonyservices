@@ -155,7 +155,7 @@
       body: JSON.stringify(data)
     }).catch(function (err) { console.error('Request save failed:', err); });
 
-    // 📩 2. WEB3FORMS (EMAİL) SORĞUSU
+// 📩 2. WEB3FORMS (EMAİL) SORĞUSU
     fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -174,11 +174,24 @@
     }).then(function (json) {
       form.reset();
       show('Thank you! Your request was sent. We will contact you shortly.', true);
+      
+      // 🎯 Google Ads Konversiya İzləməsi (Uğurlu olduqda)
+      if (typeof gtag === 'function') {
+        gtag('event', 'conversion_event_submit_lead_form');
+      }
+
     }).catch(function () {
       form.reset();
       show('Thank you! Your request was sent. We will contact you shortly.', true);
+      
+      // 🎯 Google Ads Konversiya İzləməsi (Xəta olsa belə uğurlu sayılırsa)
+      if (typeof gtag === 'function') {
+        gtag('event', 'conversion_event_submit_lead_form');
+      }
+
     }).finally(function () {
-      btn.disabled= false; btn.textContent = 'Send request';
+      btn.disabled = false; 
+      btn.textContent = 'Send request';
     });
   });
   }
