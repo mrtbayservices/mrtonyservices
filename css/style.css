@@ -179,3 +179,4 @@ footer a{color:#ffd37a;text-decoration:none}
   .menu .links,.menu .actions{display:flex;flex-direction:column}
   .menu .actions{gap:10px;margin-top:14px}
 }
+#estimate{scroll-margin-top:100px}

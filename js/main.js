@@ -54,6 +54,18 @@
   ]).then(init);
 
   function init() {
+    
+    // Səhifənin öz forması varsa, footer-dakını sil (təkrar id olmasın)
+    if (document.querySelectorAll('#estimate').length > 1) {
+      var fe = document.getElementById('footer-estimate');
+      if (fe) fe.remove();
+    }
+
+    // /chimney/#estimate kimi birbaşa linklər üçün: footer gec yükləndiyi üçün əl ilə sürüşdür
+    if (location.hash === '#estimate') {
+      var tgt = document.getElementById('estimate');
+      if (tgt) setTimeout(function () { tgt.scrollIntoView(); }, 50);
+    }
 
   // Footer year
   var y = document.getElementById('year');
@@ -98,19 +110,26 @@
 
   // Service buttons pre-select the form dropdown
   var select = document.getElementById('service');
+  function pickService(v) {
+    if (!select) return;
+    for (var i = 0; i < select.options.length; i++) {
+      if (select.options[i].text === v) { select.selectedIndex = i; break; }
+    }
+  }
+  var PAGE_SERVICE = { '/gutter': 'Gutter Cleaning & Repairs', '/chimney': 'Chimney Cleaning & Repairs' };
+  var ps = PAGE_SERVICE[location.pathname.replace(/\/+$/, '')];
+  if (ps && select && !select.value) pickService(ps);
+
   document.querySelectorAll('[data-service]').forEach(function (a) {
     a.addEventListener('click', function () {
-      var v = a.getAttribute('data-service');
-      for (var i = 0; i < select.options.length; i++) {
-        if (select.options[i].text === v) { select.selectedIndex = i; break; }
-      }
+      pickService(a.getAttribute('data-service'));
     });
   });
-
 
   // Estimate form
   var form = document.getElementById('estimate');
   var msg = document.getElementById('msg');
+    if (!form) return;
 
   function show(text, ok) {
     msg.textContent = text;
