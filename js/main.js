@@ -4,13 +4,40 @@
 
   var EMAIL = 'mrtbayservices@gmail.com';
 
+    // ---- Attribution: gclid / UTM / fbclid ----
+  var ATTR_KEY = 'mrt_attr';
+  var ATTR_TTL = 90 * 24 * 60 * 60 * 1000; // 90 gün
+  var ATTR_PARAMS = ['gclid', 'gbraid', 'wbraid', 'fbclid',
+    'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
 
-  function sendTelegramAlert(actionType) {
-    const text = `🔔 *Saytda Yeni Fəaliyyət! (mrtonyservices.com)*\n\n📌 *Hərəkət:* ${actionType}\n⏱ *Vaxt:* ${new Date().toLocaleString()}`;
-    const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
-
-    fetch(url).catch(function(err) { console.error("Telegram xətası:", err); });
+  function readAttr() {
+    try {
+      var raw = localStorage.getItem(ATTR_KEY);
+      if (!raw) return null;
+      var obj = JSON.parse(raw);
+      if (!obj || Date.now() - obj.ts > ATTR_TTL) {
+        localStorage.removeItem(ATTR_KEY);
+        return null;
+      }
+      return obj;
+    } catch (_) { return null; }
   }
+
+  function captureAttribution() {
+    var q = new URLSearchParams(location.search);
+    var found = {};
+    var has = false;
+    ATTR_PARAMS.forEach(function (k) {
+      var v = q.get(k);
+      if (v) { found[k] = v.slice(0, 200); has = true; }
+    });
+    if (!has) return; // parametr yoxdursa əvvəlki məlumat qalır
+    found.landing_page = location.pathname;
+    found.referrer = document.referrer || '';
+    found.ts = Date.now();
+    try { localStorage.setItem(ATTR_KEY, JSON.stringify(found)); } catch (_) {}
+  }
+  captureAttribution();
 
   function loadPartial(id, url) {
     var el = document.getElementById(id);
@@ -80,32 +107,6 @@
     });
   });
 
-  // ==========================================
-  // 🖱️ DÜYMƏLƏR VƏ LİNKLƏR ÜÇÜN TELEGRAM İZLƏMƏSİ
-  // ==========================================
-
-  // 1. Zəng düymələri (Navbar, footer və ya səhifədəki tel linkləri üçün)
-  document.querySelectorAll('a[href^="tel:"], .track-call').forEach(function(item) {
-    item.addEventListener('click', function() {
-      sendTelegramAlert("📞 İstifadəçi Zəng düyməsinə / nömrəsinə kliklədi!");
-    });
-  });
-
-  // 2. Email linkləri (mailto)
-  document.querySelectorAll('a[href^="mailto:"], .track-email').forEach(function(item) {
-    item.addEventListener('click', function() {
-      sendTelegramAlert("✉️ İstifadəçi Email linkinə kliklədi!");
-    });
-  });
-
-  // 3. Online Booking / HouseCall Pro düymələri (Düzəldilmiş versiya)
-  document.querySelectorAll('a[href*="housecallpro"], .book-online').forEach(function(item) {
-    item.addEventListener('click', function() {
-      sendTelegramAlert("📅 İstifadəçi 'Book Online' (HouseCall Pro) düyməsinə kliklədi!");
-    });
-  });
-
-
 
   // Estimate form
   var form = document.getElementById('estimate');
@@ -145,6 +146,10 @@
       return;
     }
 
+    var attr = readAttr() || {};
+    data.page = location.pathname;
+    data.attribution = attr;
+
     var btn = form.querySelector('button[type="submit"]');
     btn.disabled = true; btn.textContent = 'Sending…';
 
@@ -155,7 +160,7 @@
       body: JSON.stringify(data)
     }).catch(function (err) { console.error('Request save failed:', err); });
 
-// 📩 2. WEB3FORMS (EMAİL) SORĞUSU
+    // 📩 Web3Forms (email)
     fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -167,30 +172,27 @@
         phone: data.phone,
         email: data.email,
         service: data.service,
+        source: [attr.utm_source, attr.utm_medium, attr.utm_campaign].filter(Boolean).join(' / ') || 'direct/organic',
+        gclid: attr.gclid || '',
+        landing_page: attr.landing_page || location.pathname,
         message: data.message
       })
     }).then(function (res) {
       return res.json();
     }).then(function (json) {
+      if (!json.success) throw new Error('web3forms failed');
       form.reset();
       show('Thank you! Your request was sent. We will contact you shortly.', true);
-      
-      // 🎯 Google Ads Konversiya İzləməsi (Uğurlu olduqda)
+
+      // 🎯 Konversiya yalnız həqiqətən uğurlu olduqda
       if (typeof gtag === 'function') {
         gtag('event', 'conversion_event_submit_lead_form');
       }
-
     }).catch(function () {
-      form.reset();
-      show('Thank you! Your request was sent. We will contact you shortly.', true);
-      
-      // 🎯 Google Ads Konversiya İzləməsi (Xəta olsa belə uğurlu sayılırsa)
-      if (typeof gtag === 'function') {
-        gtag('event', 'conversion_event_submit_lead_form');
-      }
-
+      // Forma sıfırlanmır, istifadəçi yazdığını itirmir
+      show('Sorry, something went wrong. Please call us or try again.', false);
     }).finally(function () {
-      btn.disabled = false; 
+      btn.disabled = false;
       btn.textContent = 'Send request';
     });
   });
