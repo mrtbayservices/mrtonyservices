@@ -221,6 +221,14 @@
 /* Click tracking → Telegram & Google Analytics */
 (function () {
   var URL = 'https://fdzxqwtenqfommrtdlvg.supabase.co/functions/v1/notify-click';
+  
+    function readAttr() {
+    try {
+      var o = JSON.parse(localStorage.getItem('mrt_attr') || 'null');
+      return o && Date.now() - o.ts < 90 * 864e5 ? o : {};
+    } catch (_) { return {}; }
+  }
+
   function kind(h) {
     h = (h || '').toLowerCase();
     if (h.indexOf('tel:') === 0) return 'call';
@@ -246,7 +254,12 @@
       fetch(URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: type, page: location.pathname }),
+        body: JSON.stringify({
+          type: type,
+          page: location.pathname,
+          device: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+          attribution: readAttr()
+        }),
         keepalive: true
       }).catch(function () {});
     } catch (_) {}
