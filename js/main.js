@@ -218,7 +218,7 @@
   }
 })();
 
-/* Click tracking → Telegram (token stays on the server) */
+/* Click tracking → Telegram & Google Analytics */
 (function () {
   var URL = 'https://fdzxqwtenqfommrtdlvg.supabase.co/functions/v1/notify-click';
   function kind(h) {
@@ -236,6 +236,12 @@
     if (!a) return;
     var type = kind(a.getAttribute('href'));
     if (!type) return;
+
+    // 🎯 Əgər klik telefon zəlidirsə, GA4-ə birbaşa phone_call konversiyası göndər
+    if (type === 'call' && typeof gtag === 'function') {
+      gtag('event', 'phone_call');
+    }
+
     try {
       fetch(URL, {
         method: 'POST',
