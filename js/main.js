@@ -144,6 +144,24 @@
       '&body=' + encodeURIComponent(body);
   }
 
+    // ---- Phone: hint + validation (the form is novalidate, so we check in JS) ----
+  var phoneInput = form.querySelector('input[name="phone"]');
+  if (phoneInput) {
+    phoneInput.setAttribute('inputmode', 'tel');
+    phoneInput.setAttribute('placeholder', '(510) 555-1234');
+  }
+
+  // Returns '(510) 555-1234' for a valid US number, or '' if it is not one.
+  // Accepts digits, spaces and ( ) + - . ; optional leading 1 / +1.
+  function normalizePhone(v) {
+    v = (v || '').trim();
+    if (!/^[\d\s()+.\-]+$/.test(v)) return '';   // letters etc. -> invalid
+    var d = v.replace(/\D/g, '');
+    if (d.length === 11 && d.charAt(0) === '1') d = d.slice(1);
+    if (!/^[2-9]\d{9}$/.test(d)) return '';
+    return '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6);
+  }
+
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     var fd = new FormData(form);
@@ -160,6 +178,13 @@
       show('Please fill in your name, phone, service and project details.', false);
       return;
     }
+        var phoneOk = normalizePhone(data.phone);
+    if (!phoneOk) {
+      show('Please enter a valid phone number, for example (510) 555-1234.', false);
+      if (phoneInput) phoneInput.focus();
+      return;
+    }
+    data.phone = phoneOk;
     if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
       show('Please enter a valid email address.', false);
       return;
