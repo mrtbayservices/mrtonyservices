@@ -180,3 +180,10 @@ footer a{color:#ffd37a;text-decoration:none}
   .menu .actions{gap:10px;margin-top:14px}
 }
 #estimate{scroll-margin-top:100px}
+.confirm-dlg{border:0;border-radius:16px;padding:24px;width:min(92vw,360px);box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center}
+.confirm-dlg::backdrop{background:rgba(0,0,0,.55)}
+.confirm-q{font-size:1.15rem;font-weight:700;margin:0 0 6px}
+.confirm-sub{margin:0 0 18px;color:#555;min-height:1em}
+.confirm-btns{display:flex;gap:10px}
+.confirm-btns .btn{flex:1}
+.confirm-no{background:#eee!important;color:#222!important;border-color:#ddd!important}

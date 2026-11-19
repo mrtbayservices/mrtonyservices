@@ -218,16 +218,28 @@
   }
 })();
 
-/* Click tracking → Telegram & Google Analytics */
+/* Click tracking → Telegram + təsdiq pəncərəsi */
 (function () {
   var URL = 'https://fdzxqwtenqfommrtdlvg.supabase.co/functions/v1/notify-click';
-  
-    function readAttr() {
-    try {
-      var o = JSON.parse(localStorage.getItem('mrt_attr') || 'null');
-      return o && Date.now() - o.ts < 90 * 864e5 ? o : {};
-    } catch (_) { return {}; }
-  }
+
+  // true = əvvəl soruşulsun, false = birbaşa keçsin
+  var CONFIRM = { call: true, email: true, whatsapp: true, booking: true, instagram: true, yelp: true };
+
+  var TEXT = {
+    call:      { q: 'Call Mr. Tony Services?',      yes: 'Call now' },
+    email:     { q: 'Send us an email?',            yes: 'Open email' },
+    whatsapp:  { q: 'Message us on WhatsApp?',      yes: 'Open WhatsApp' },
+    booking:   { q: 'Continue to online booking?',  yes: 'Continue' },
+    instagram: { q: 'Open our Instagram page?',     yes: 'Open Instagram' },
+    yelp:      { q: 'Open our Yelp page?',          yes: 'Open Yelp' }
+  };
+
+  var GA_EVENTS = {
+    call: 'click_call',
+    email: 'click_email',
+    whatsapp: 'click_whatsapp',
+    booking: 'click_booking'
+  };
 
   function kind(h) {
     h = (h || '').toLowerCase();
@@ -239,17 +251,25 @@
     if (h.indexOf('yelp.') !== -1) return 'yelp';
     return null;
   }
-  document.addEventListener('click', function (e) {
-    var a = e.target.closest && e.target.closest('a[href]');
-    if (!a) return;
-    var type = kind(a.getAttribute('href'));
-    if (!type) return;
 
-    // 🎯 Əgər klik telefon zəlidirsə, GA4-ə birbaşa phone_call konversiyası göndər
-    if (type === 'call' && typeof gtag === 'function') {
-      gtag('event', 'phone_call');
+  function readAttr() {
+    try {
+      var o = JSON.parse(localStorage.getItem('mrt_attr') || 'null');
+      return o && Date.now() - o.ts < 90 * 864e5 ? o : {};
+    } catch (_) { return {}; }
+  }
+
+  function pretty(h) {
+    var d = h.replace(/\D/g, '');
+    return d.length === 11
+      ? '+1 (' + d.slice(1, 4) + ') ' + d.slice(4, 7) + '-' + d.slice(7)
+      : h.replace('tel:', '');
+  }
+
+  function track(type) {
+    if (GA_EVENTS[type] && typeof gtag === 'function') {
+      gtag('event', GA_EVENTS[type], { page_path: location.pathname, transport_type: 'beacon' });
     }
-
     try {
       fetch(URL, {
         method: 'POST',
@@ -263,5 +283,47 @@
         keepalive: true
       }).catch(function () {});
     } catch (_) {}
+  }
+
+  function go(a) {
+    var href = a.getAttribute('href');
+    if (a.target === '_blank') window.open(href, '_blank', 'noopener');
+    else location.href = href;
+  }
+
+  var dlg;
+  function ask(type, a, onYes) {
+    var t = TEXT[type];
+    var sub = type === 'call' ? pretty(a.getAttribute('href')) : '';
+    if (typeof HTMLDialogElement === 'undefined') {
+      if (window.confirm(t.q + (sub ? '\n' + sub : ''))) onYes();
+      return;
+    }
+    if (!dlg) {
+      dlg = document.createElement('dialog');
+      dlg.className = 'confirm-dlg';
+      dlg.innerHTML = '<p class="confirm-q"></p><p class="confirm-sub"></p>' +
+        '<div class="confirm-btns"><button type="button" class="btn confirm-no">Cancel</button>' +
+        '<button type="button" class="btn confirm-yes"></button></div>';
+      document.body.appendChild(dlg);
+      dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+    }
+    dlg.querySelector('.confirm-q').textContent = t.q;
+    dlg.querySelector('.confirm-sub').textContent = sub;
+    var yes = dlg.querySelector('.confirm-yes');
+    yes.textContent = t.yes;
+    yes.onclick = function () { dlg.close(); onYes(); };
+    dlg.querySelector('.confirm-no').onclick = function () { dlg.close(); };
+    dlg.showModal();
+  }
+
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a) return;
+    var type = kind(a.getAttribute('href'));
+    if (!type) return;
+    if (!CONFIRM[type]) { track(type); return; }
+    e.preventDefault();
+    ask(type, a, function () { track(type); go(a); });
   });
 })();
